@@ -1,0 +1,224 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  app: dso-exporter
+  template: dso-exporter-template
+metadata:
+  annotations:
+    description: dso-exporter
+    openshift.io/display-name: dso-exporter
+    tags: dso-exporter, v1
+  name: dso-exporter
+objects:
+  - apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
+    metadata:
+      labels:
+        app: ${OCP_APP_NAME}
+      name: ${OCP_APP_NAME}
+    spec:
+      replicas: 1
+      strategy:
+        type: Rolling
+      template:
+        metadata:
+          labels:
+            app: ${OCP_APP_NAME}
+          name: ${OCP_APP_NAME}-pod
+        spec:
+          containers:
+            - env:
+                - name: KSPD_JENKINS_HOST 
+                  value: ${KSPD_JENKINS_HOST}
+                - name: KSPD_JENKINS_USER
+                  value: ${KSPD_JENKINS_USER}
+                - name: KSPD_JENKINS_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      key: kspd-jenkins-token
+                      name: ${OCP_APP_NAME}
+                - name: KSPD_NEXUS_HOST 
+                  value: ${KSPD_NEXUS_HOST}
+                - name: KSPD_NEXUS_USER
+                  value: ${KSPD_NEXUS_USER}
+                - name: KSPD_NEXUS_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: kspd-nexus-password
+                      name: ${OCP_APP_NAME}
+                - name: KSPD_GHE_HOST 
+                  value: ${KSPD_GHE_HOST}
+                - name: KSPD_SAST_HOST 
+                  value: ${KSPD_SAST_HOST}  
+                - name: KSPD_SAST_USER
+                  value: ${KSPD_SAST_USER}
+                - name: KSPD_SAST_CLIENT_ID
+                  value: ${KSPD_SAST_CLIENT_ID}
+                - name: KSPD_SAST_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: kspd-sast-password
+                      name: ${OCP_APP_NAME}
+                - name: KSPD_SAST_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      key: kspd-sast-secret
+                      name: ${OCP_APP_NAME}
+                - name: KSPD_ARTIFACTORY_HOST
+                  value: ${KSPD_ARTIFACTORY_HOST}
+                - name: KSPD_ARTIFACTORY_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      key: kspd-artifactory-token
+                      name: ${OCP_APP_NAME}
+              image: ${APP_IMAGE}
+              name: dso-exporter              
+              ports:
+                - containerPort: 5000
+                  protocol: TCP
+              livenessProbe:
+                httpGet:
+                  scheme: HTTP
+                  path: /metrics
+                  port: 5000
+                initialDelaySeconds: 40
+                periodSeconds: 180
+                timeoutSeconds: 10
+              readinessProbe:
+                httpGet:
+                  scheme: HTTP
+                  path: /metrics
+                  port: 5000
+                periodSeconds: 30
+                timeoutSeconds: 10
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 200m
+                  memory: 512Mi
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+      triggers:
+        - type: ConfigChange
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+              - ${OCP_APP_NAME}
+            from:
+              kind: ImageStreamTag
+              name: ${OCP_APP_NAME}:latest
+              namespace: ${APP_NAMESPACE}
+          type: ImageChange
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: ${OCP_APP_NAME}
+      name: ${OCP_APP_NAME}
+    spec:
+      type: ClusterIP
+      ports:
+        - name: 5000-tcp
+          port: 5000
+          protocol: TCP
+          targetPort: 5000
+      selector:
+        app: ${OCP_APP_NAME}
+  - apiVersion: v1
+    kind: Route
+    metadata:
+      name: ${OCP_APP_NAME}
+    spec:
+      tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+      host: ${OCP_APP_NAME}.${HOSTROUTE}
+      path: /metrics
+      to:
+        kind: Service
+        name: ${OCP_APP_NAME}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: ${OCP_APP_NAME}
+    stringData:
+      kspd-jenkins-token: ${KSPD_JENKINS_TOKEN}
+      kspd-nexus-password: ${KSPD_NEXUS_PASSWORD}
+      kspd-sast-password: ${KSPD_SAST_PASSWORD}
+      kspd-sast-secret: ${KSPD_SAST_SECRET}
+      kspd-artifactory-token: ${KSPD_ARTIFACTORY_TOKEN}
+parameters:
+  - description: App namespace
+    displayName: App namespace  
+    name: APP_NAMESPACE
+    value: devsecops
+  - description: App name
+    displayName: App name  
+    name: OCP_APP_NAME
+    value: dso-exporter
+  - description: App image
+    displayName: App image
+    name: APP_IMAGE
+    value: ""
+  - description: Hostroute
+    displayName: Hostroute
+    name: HOSTROUTE
+    value: apps.test.paas.gazprom-neft.local
+  - description: kspd jenkins host  
+    displayName: kspd jenkins host 
+    name: KSPD_JENKINS_HOST
+    value: ""
+  - description: kspd jenkins user  
+    displayName: kspd jenkins user 
+    name: KSPD_JENKINS_USER
+    value: "jenkins-paashub-api-int"
+  - description: kspd jenkins token 
+    displayName: kspd jenkins token  
+    name: KSPD_JENKINS_TOKEN
+    value: ""
+  - description: kspd nexus host  
+    displayName: kspd nexus host 
+    name: KSPD_NEXUS_HOST
+    value: ""
+  - description: kspd nexus user  
+    displayName: kspd nexus user 
+    name: KSPD_NEXUS_USER
+    value: ""
+  - description: kspd nexus password 
+    displayName: kspd nexus password
+    name: KSPD_NEXUS_PASSWORD
+    value: ""
+  - description: kspd ghe host  
+    displayName: kspd ghe host 
+    name: KSPD_GHE_HOST
+    value: ""
+  - description: kspd sast host  
+    displayName: kspd sast host 
+    name: KSPD_SAST_HOST
+    value: ""
+  - description: kspd sast user  
+    displayName: kspd sast user 
+    name: KSPD_SAST_USER
+    value: ""
+  - description: kspd sast client id  
+    displayName: kspd sast client id 
+    name: KSPD_SAST_CLIENT_ID
+    value: ""
+  - description: kspd sast password 
+    displayName: kspd sast password  
+    name: KSPD_SAST_PASSWORD
+    value: ""
+  - description: kspd sast secret 
+    displayName: kspd sast secret  
+    name: KSPD_SAST_SECRET
+    value: ""
+  - description: kspd artifactory host  
+    displayName: kspd artifactory host 
+    name: KSPD_ARTIFACTORY_HOST
+    value: ""
+  - description: kspd artifactory token 
+    displayName: kspd artifactory token  
+    name: KSPD_ARTIFACTORY_TOKEN
+    value: ""
