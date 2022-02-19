@@ -1,5 +1,5 @@
 # Custom prometheus exporter
-Custom prometheus exporter based on prometheus_client python library.
+Custom prometheus exporter based on python library prometheus_client.
 
 ## Exporter can get metrics of avaliability from servers:
 * Jenkins
