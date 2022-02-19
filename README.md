@@ -30,5 +30,3 @@ $ docker build -t custom_exporter -f ./Dockerfile .
 $ docker run -it -d --name custom_exporter -p 5000:5000 custom_exporter
 ```
 There is a kubernetes-template in okd-folder to deploy exporter in openshift/kubernetes.
-
-Also you can deploy it using docker. 
