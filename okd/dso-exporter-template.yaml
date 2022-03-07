@@ -71,6 +71,15 @@ objects:
                     secretKeyRef:
                       key: kspd-artifactory-token
                       name: ${OCP_APP_NAME}
+                - name: CHECK_CERT_HOSTS
+                  value: ${CHECK_CERT_HOSTS}
+                - name: KSPD_SAST_QUEUE_USER
+                  value: ${KSPD_SAST_QUEUE_USER}
+                - name: KSPD_SAST_QUEUE_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: kspd-sast-queue-password
+                      name: ${OCP_APP_NAME}
               image: ${APP_IMAGE}
               name: dso-exporter              
               ports:
@@ -149,11 +158,12 @@ objects:
       kspd-sast-password: ${KSPD_SAST_PASSWORD}
       kspd-sast-secret: ${KSPD_SAST_SECRET}
       kspd-artifactory-token: ${KSPD_ARTIFACTORY_TOKEN}
+      kspd-sast-queue-password: ${KSPD_SAST_QUEUE_PASSWORD}
 parameters:
   - description: App namespace
     displayName: App namespace  
     name: APP_NAMESPACE
-    value: devsecops
+    value: u200004636-devsecops
   - description: App name
     displayName: App name  
     name: OCP_APP_NAME
@@ -161,7 +171,7 @@ parameters:
   - description: App image
     displayName: App image
     name: APP_IMAGE
-    value: ""
+    value: "registry.gazprom-neft.local:5000/u200004636-devsecops/dso-exporter"
   - description: Hostroute
     displayName: Hostroute
     name: HOSTROUTE
@@ -169,7 +179,7 @@ parameters:
   - description: kspd jenkins host  
     displayName: kspd jenkins host 
     name: KSPD_JENKINS_HOST
-    value: ""
+    value: "https://ci.gazprom-neft.local/login?from=%2F"
   - description: kspd jenkins user  
     displayName: kspd jenkins user 
     name: KSPD_JENKINS_USER
@@ -181,7 +191,7 @@ parameters:
   - description: kspd nexus host  
     displayName: kspd nexus host 
     name: KSPD_NEXUS_HOST
-    value: ""
+    value: "http://nexus.gazprom-neft.local:8080/service/rest/v1/status/check"
   - description: kspd nexus user  
     displayName: kspd nexus user 
     name: KSPD_NEXUS_USER
@@ -193,19 +203,19 @@ parameters:
   - description: kspd ghe host  
     displayName: kspd ghe host 
     name: KSPD_GHE_HOST
-    value: ""
+    value: "https://git.gazprom-neft.local/status"
   - description: kspd sast host  
     displayName: kspd sast host 
     name: KSPD_SAST_HOST
-    value: ""
+    value: "https://spb99-dso-sast1.gazprom-neft.local:8443"
   - description: kspd sast user  
     displayName: kspd sast user 
     name: KSPD_SAST_USER
-    value: ""
+    value: "no-access-user"
   - description: kspd sast client id  
     displayName: kspd sast client id 
     name: KSPD_SAST_CLIENT_ID
-    value: ""
+    value: "resource_owner_client"
   - description: kspd sast password 
     displayName: kspd sast password  
     name: KSPD_SAST_PASSWORD
@@ -217,8 +227,20 @@ parameters:
   - description: kspd artifactory host  
     displayName: kspd artifactory host 
     name: KSPD_ARTIFACTORY_HOST
-    value: ""
+    value: "https://repo.apps.test.paas.gazprom-neft.local"
   - description: kspd artifactory token 
     displayName: kspd artifactory token  
     name: KSPD_ARTIFACTORY_TOKEN
+    value: ""
+  - description: check cert hosts 
+    displayName: check cert hosts
+    name: CHECK_CERT_HOSTS
+    value: ""
+  - description: kspd sast queue user 
+    displayName: kspd sast queue user
+    name: KSPD_SAST_QUEUE_USER
+    value: ""
+  - description: kspd sast queue password 
+    displayName: kspd sast queue password  
+    name: KSPD_SAST_QUEUE_PASSWORD
     value: ""
