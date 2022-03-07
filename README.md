@@ -8,6 +8,11 @@ Custom prometheus exporter based on python library prometheus_client.
 * Checkmarx SAST
 * JFrog Artifactory
 
+## Other features
+* Get metrics about certificate duration in days left
+* Get metrics about certificate that hostname is in Subject Alternative Name
+* Get metrics about SAST queue of started code-checks
+
 ## Avaliability is checking by HTTP-requests to:
 * Jenkins login-page https://jenkins-server/login?from=%2F
 * Nexus healthcheck-page https://nexus-server/service/rest/v1/status/check (exporter parces this page and get status of services)
@@ -17,7 +22,6 @@ Custom prometheus exporter based on python library prometheus_client.
     * https://artifactory-server/artifactory/api/system/ping
     * https://artifactory-server/ui/api/v1/system/status/nodes (exporter parces this page and get status of nodes)
     * https://artifactory-server/artifactory/api/system/status (exporter parces this page and get status of services)
-
 ## Deploy using docker
 1. Clone repository and go to its directory
 ```
